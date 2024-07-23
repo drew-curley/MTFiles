@@ -22,17 +22,10 @@ model = model.to(device)
 
 tokenizer = AutoTokenizer.from_pretrained(repo)
 
-translator = pipeline('translation', model=model, tokenizer=tokenizer, src_lang="eng_Latn", tgt_lang='npi_Deva', max_length = 1000000)
+translator = pipeline('translation', model=model, tokenizer=tokenizer, src_lang="eng_Latn", tgt_lang='afr_Latn', max_length = 1000000)
  
 x = """
-The gospel of John has 21 chapters. This plan will help you read all of them in 24 days. Each day, read the Scripture and observe what it says. Answer the questions. Then think about the passage, what you have learned, and how you can apply it to your life. Use the checkboxes to keep track of your progress. 
-Day 1
-☐  Read John 1:1-5
-•	What do you learn about God? 
-☐  Read John 1:6-13
-•	What does a witness do? 
-•	How can you be a good witness?
-•	Describe the true Light.
+Susan is the greatest worker. 
 
 
 
