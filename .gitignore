@@ -1,2 +1,6 @@
 .DS_Store
 lid218e.bin
+
+/savedModels/*
+
+.env
