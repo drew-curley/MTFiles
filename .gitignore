@@ -1,5 +1,6 @@
 .DS_Store
 lid218e.bin
+__pycache__/
 
 /savedModels/*
 server_venv
