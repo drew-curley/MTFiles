@@ -14,7 +14,6 @@ import json
 nltk.download('punkt')
 nltk.download('punkt_tab')
 
-
 class Translator:
 
     def __init__(self, input_folder, output_folder, ext_in='docx', ext_out='docx', pretrained_lang_model="./lid218e.bin"):
@@ -185,31 +184,40 @@ class Translator:
 
 
     def get_languages(self, file):
-        """Detect the languages in the document."""
         file = file.resolve()
         fasttext_model = fasttext.load_model(self.pretrained_lang_model)
-
-        # Open the input file as a Word document
-        try:
+        
+        try :
             document = docx.Document(file)
         except BadZipFile:
             print(f"BadZipFile Error on opening {file}")
-            return Counter()
 
-        paragraphs = [para for para in document.paragraphs]
-        sentences = [sentence for para in document.paragraphs for sentence in sent_tokenize(para.text)]
+        languageCounter = Counter()
 
-        languages = Counter()
-        for sentence in sentences:
-            predictions = fasttext_model.predict(sentence, k=1)
-            output_lang = predictions[0][0].replace('__label__', '')
-            languages.update([output_lang])
+        self.get_languages_in_paragraphs(document.paragraphs, fasttext_model, languageCounter)
+        self.get_languages_in_tables(document.tables, fasttext_model, languageCounter)
 
         del fasttext_model
         gc.collect()
         torch.cuda.empty_cache()
 
-        return languages
+        return languageCounter
+
+
+    def get_languages_in_paragraphs(self, paragraphs, model, counter):
+        sentences = [sentence for para in paragraphs for sentence in sent_tokenize(para.text)]
+
+        for sentence in sentences:
+            predictions = model.predict(sentence, k=1)
+            output_lang = predictions[0][0].replace('__label__', '')
+            counter.update([output_lang])
+
+
+    def get_languages_in_tables(self, tables, model, counter):
+        for table in tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    self.get_languages_in_paragraphs(cell.paragraphs, model, counter)
 
 
     def translate_files(self):
@@ -217,45 +225,43 @@ class Translator:
         print(f"Found {len(files)} {self.ext_in} files in {self.input_folder.resolve()}")
 
         for i, file in enumerate(files, 1):
-            # file = file.resolve()
-            # languages_in_file = self.get_languages(file)
-            # top_language_in_file = languages_in_file.most_common(1)[0][0]
-            # file_is_english = top_language_in_file == "eng_Latn"
+            file = file.resolve()
+            languages_in_file = self.get_languages(file)
+            top_language_in_file = languages_in_file.most_common(1)[0][0]
+            file_is_english = top_language_in_file == "eng_Latn"
 
-            # if file_is_english:
-            print(f"{i:>4} : Translating file {file} from English to multiple languages.")
-            try:
-                document = docx.Document(file)
-            except BadZipFile:
-                print(f"BadZipFile Error on opening {file}")
-                continue
+            if file_is_english:
+                print(f"{i:>4} : Translating file {file} from English to multiple languages.")
+                try:
+                    document = docx.Document(file)
+                except BadZipFile:
+                    print(f"BadZipFile Error on opening {file}")
+                    continue
 
-            for model_name, checkpoint in self.checkpoints.items():
-                print(f"Loading model: {model_name}")
-                model, tokenizer = self.load_model(checkpoint)
+                for model_name, checkpoint in self.checkpoints.items():
+                    print(f"Loading model: {model_name}")
+                    model, tokenizer = self.load_model(checkpoint)
 
-                # TODO: update this to account for the fact that languages is a JSON file now
-                #  and now a set of pairs
-                for target_lang, file_name in self.languages.items():
-                    output_dir_for_model = self.output_folder / f"{model_name}"
-                    output_dir_for_model.mkdir(parents=True, exist_ok=True)
-                    output_path = output_dir_for_model / f"{file.stem}_{file_name}.{self.ext_out}"
+                    for target_lang, file_name in self.languages.items():
+                        output_dir_for_model = self.output_folder / f"{model_name}"
+                        output_dir_for_model.mkdir(parents=True, exist_ok=True)
+                        output_path = output_dir_for_model / f"{file.stem}_{file_name}.{self.ext_out}"
 
-                    self.translate_docx(file, output_path, model_name)
+                        self.translate_docx(file, output_path, model_name)
 
-                    print(f"{i:>4} : Translated file {file} to {file_name}.")
+                        print(f"{i:>4} : Translated file {file} to {file_name}.")
 
-                self.unload_model(model, tokenizer)
+                    self.unload_model(model, tokenizer)
 
-            # else:
-                # print(f"{i:>4} : Not translating file {file}. It seems to be in :{top_language_in_file}.")
+            else:
+                print(f"{i:>4} : Not translating file {file}. It seems to be in :{top_language_in_file}.")
 
 
 # Example usage:
-translator = Translator(input_folder="./Input", output_folder="./Translated/")
+# translator = Translator(input_folder="./Input", output_folder="./Translated/")
 # Example of translating text
 # translated_text = translator.translate_text("Hello, world!", "eng_Latn", "fra_Latn", "NLLB-distilled")
 # print(translated_text)
 
 # # Translate files in a folder
-translator.translate_files()
+# translator.translate_files()
