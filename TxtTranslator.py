@@ -101,6 +101,7 @@ class TxtTranslator(TranslatorInterface):
         # TODO: finish
 
     def translate(self, text, source_language, target_language):
+        # TODO: account for this being a .txt file
         """Translate a given text from src_lang to tgt_lang using the specified model."""
         # TODO: allow the translate method to specify what model to use. Possibly make an Enum class from 
         #  the languages.json file. 

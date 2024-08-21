@@ -1,3 +1,4 @@
 {
-    "NLLB-distilled": "facebook/nllb-200-distilled-600M"
+    "NLLB-distilled": "facebook/nllb-200-distilled-600M",
+    "NLLB": "facebook/nllb-200-3.3B"
 }

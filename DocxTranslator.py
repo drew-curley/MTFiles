@@ -18,116 +18,25 @@ nltk.download('punkt_tab')
 
 class DocxTranslator(TranslatorInterface):
 
-    def __init__(self, input_folder, output_folder, pretrained_lang_model="./lid218e.bin"):
-        self.input_folder = Path(input_folder)
-        self.output_folder = Path(output_folder)
+    def __init__(self, pretrained_lang_model="./lid218e.bin", ):
         self.ext_in = 'docx'
         self.ext_out = 'docx'
         self.pretrained_lang_model = pretrained_lang_model
 
         with open("./constants/model_checkpoints.json", 'r') as json_file:
             self.checkpoints = json.load(json_file)
-            # "NLLB": "facebook/nllb-200-3.3B",
-            # "MADLAD": "google/madlad400-3b-mt",
-            # "Llama-3.1-405B": "meta-llama/Meta-Llama-3.1-405B"
 
         with open("./constants/languages.json", 'r') as json_file:
             self.languages = json.load(json_file)
-                # "Ethiopian": "amh_Ethi",
-                # "Arabic": "arb_Arab",
-                # "Assamese": "asm_Beng",
-                # "Bangal": "ben_Beng",
-                # "BPortugese": "por_Latn",
-                # "Burmese": "mya_Mymr",
-                # "Cebuano": "ceb_Latn",
-                # "Chinese": "zsm_Latn",
-                # "French": "fra_Latn",
-                # "Gujarati": "guj_Gujr",
-                # "Hausa": "hau_Latn",
-                # "Hindi": "hin_Deva",
-                # "Illocano": "ilo_Latn",
-                # "Indonesian": "ind_Latn",
-                # "Kannada": "kan_Knda",
-                # "Khmer": "khm_Khmr",
-                # "Laotian": "lao_Laoo",
-                # "LASpanish": "spa_Latn",
-                # "Malayalam": "mal_Mlym",
-                # "Nepali": "npi_Deva",
-                # "Oriya": "ory_Orya",
-                # "PlatMalagasy": "plt_Latn",
-                # "EPunjabi": "pan_Guru",
-                # "Russian": "rus_Cyrl",
-                # "Swahili": "swh_Latn",
-                # "Tagalog": "tgl_Latn",
-                # "Tamil": "tam_Taml",
-                # "Telugu": "tel_Telu",
-                # "Thai": "tha_Thai",
-                # "TokPisin": "tpi_Latn",
-                # "Urdu": "urd_Arab",
 
         self._prepare_language_detection_model()
-
-
-    def _prepare_language_detection_model(self):
-        if not os.path.isfile(self.pretrained_lang_model):
-            # Download the model if it doesn't exist
-            os.system(f"wget https://dl.fbaipublicfiles.com/nllb/lid/lid218e.bin")
-
-
-    def _load_model(self, model_name):
-        model_dir = f"{TRANSFORMERS_CACHE}/{model_name}"
-
-        if not os.path.exists(model_dir):
-            print(f"{model_name} not found")
-            tokenizer = AutoTokenizer.from_pretrained(model_name)
-            model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-            model.save_pretrained(model_dir)
-            tokenizer.save_pretrained(model_dir)
-        else:
-            print(f"{model_name} found")
-            tokenizer = AutoTokenizer.from_pretrained(f"{model_dir}")
-            model = AutoModelForSeq2SeqLM.from_pretrained(f"{model_dir}")
-
-        return model, tokenizer
-
-
-    def _unload_model(self, model, tokenizer):
-        del model
-        del tokenizer
-        gc.collect()
-        torch.cuda.empty_cache()
-
-    def _translate_docx(self, input_file, output_file, model_name="NLLB"):
-        """Translate a DOCX file and save the translated content to a new file."""
-        model, tokenizer = self.load_model(self.checkpoints[model_name])
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-        translation_pipeline = pipeline('translation',
-                                        model=model,
-                                        tokenizer=tokenizer,
-                                        src_lang='eng_Latn',
-                                        tgt_lang='fra_Latn',
-                                        max_length=400,
-                                        device=device)
-
-        doc = docx.Document(input_file)
-
-        # Iterate over paragraphs and tables to translate the content
-        for paragraph in doc.paragraphs:
-            self.translate_paragraph(paragraph, translation_pipeline)
-
-        for table in doc.tables:
-            self.translate_table(table, translation_pipeline)
-
-        # Save the translated document
-        doc.save(output_file)
-        self.unload_model(model, tokenizer)
 
 
     def _translate_paragraph(self, paragraph, translation_pipeline):
         """Translate the content of a paragraph and replace its text."""
         original_text = paragraph.text
         if original_text.strip():  # Only translate if the paragraph is not empty
+            print(f"translting {original_text}")
             translated_text = translation_pipeline(original_text)[0]['translation_text']
             self._replace_text_in_runs(paragraph, translated_text)
 
@@ -135,7 +44,6 @@ class DocxTranslator(TranslatorInterface):
     def _replace_text_in_runs(self, paragraph, translated_text):
         """Replace text in each run while preserving the original formatting."""
         original_text = "".join(run.text for run in paragraph.runs)
-
         # Ensure we correctly replace text while preserving formatting
         if len(original_text) == len(translated_text):
             current_char_index = 0
@@ -201,50 +109,68 @@ class DocxTranslator(TranslatorInterface):
                 for cell in row.cells:
                     self._get_languages_in_paragraphs(cell.paragraphs, model, counter)
 
-    # TODO: update this so that it does not just call translate files!!!!!
-    def translate(self, text, source_language, target_language):
-        self._translate_files()
 
-    def _translate_files(self):
-        files = [file for file in self.input_folder.rglob("*." + self.ext_in)]
-        print(f"Found {len(files)} {self.ext_in} files in {self.input_folder.resolve()}")
+    def translate(self, filePath, source_language, target_language, model_name):
+        file = filePath.resolve()
+        languages_in_file = self._get_languages(file)
+        top_language_in_file = languages_in_file.most_common(1)[0][0]
+        file_is_src_lang = (top_language_in_file == source_language)
 
-        for i, file in enumerate(files, 1):
-            file = file.resolve()
-            languages_in_file = self._get_languages(file)
-            top_language_in_file = languages_in_file.most_common(1)[0][0]
-            file_is_english = top_language_in_file == "eng_Latn"
+        if not file_is_src_lang:
+            print(f"Cannot translate. File is in {top_language_in_file} expected {source_language}")
+            return
 
-            if file_is_english:
-                print(f"{i:>4} : Translating file {file} from English to multiple languages.")
-                try:
-                    document = docx.Document(file)
-                except BadZipFile:
-                    print(f"BadZipFile Error on opening {file}")
-                    continue
+        if target_language not in self.languages:
+            print(f"Cannot translate. {target_language} is not a supported target language.")
+            return
 
-                for model_name, checkpoint in self.checkpoints.items():
-                    print(f"Loading model: {model_name}")
-                    model, tokenizer = self._load_model(checkpoint)
+        try:
+            document = docx.Document(file)
+        except BadZipFile:
+            print(f"BadZipFile Error on opening {file}")
+            return
+        
+        if model_name not in self.checkpoints:
+            print(f"Cannot translate. {model_name} is not a supported model.")
+            return 
 
-                    for target_lang, file_name in self.languages.items():
-                        output_dir_for_model = self.output_folder / f"{model_name}"
-                        output_dir_for_model.mkdir(parents=True, exist_ok=True)
-                        output_path = output_dir_for_model / f"{file.stem}_{file_name}.{self.ext_out}"
+        print(f"Loading model: {self.checkpoints[model_name]}")
+        model, tokenizer = self._load_model(self.checkpoints[model_name])
 
-                        self.translate_docx(file, output_path, model_name)
+        file_name = self.languages[target_language]
+        output_dir_for_model = Path(f'./Translated/{model_name}')
+        output_dir_for_model.mkdir(parents=True, exist_ok=True)
+        output_path = output_dir_for_model / f"{file.stem}_{file_name}.{self.ext_out}"
 
-                        print(f"{i:>4} : Translated file {file} to {file_name}.")
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-                    self._unload_model(model, tokenizer)
+        translation_pipeline = pipeline('translation',
+                                        model=model,
+                                        tokenizer=tokenizer,
+                                        src_lang=source_language,
+                                        tgt_lang=target_language,
+                                        max_length=400,
+                                        device=device)
 
-            else:
-                print(f"{i:>4} : Not translating file {file}. It seems to be in :{top_language_in_file}.")
+        # Iterate over paragraphs and tables to translate the content
+        for paragraph in document.paragraphs:
+            self._translate_paragraph(paragraph, translation_pipeline)
+
+        for table in document.tables:
+            self._translate_table(table, translation_pipeline)
+
+        # Save the translated document
+        document.save(output_path)
+        self._unload_model(model, tokenizer)          
+
+        self._unload_model(model, tokenizer)
 
 
 # Example usage:
-translator = DocxTranslator(input_folder="./Input", output_folder="./Translated/")
-translator.translate("asdf", "asdf", "asdf")
+translator = DocxTranslator()
+file = Path("./Input/Spiritual Terms Eval with defs and refs for IT 1.docx")
+
+translator.translate(file, "eng_Latn", "spa_Latn", "NLLB")
 # # Example of translating text
 # translated_text = translator.translate("Hello, world!", "eng_Latn", "fra_Latn", "NLLB-distilled")
 # print(translated_text)
