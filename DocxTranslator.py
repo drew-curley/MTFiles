@@ -173,6 +173,6 @@ class DocxTranslator(TranslatorInterface):
         return output_path   
 
 # Example usage:
-translator = DocxTranslator()
-file = Path("./Input/Spiritual Terms Eval with defs and refs for IT 1.docx")
-translator.translate(file, "eng_Latn", "spa_Latn", "NLLB-distilled")
+# translator = DocxTranslator()
+# file = Path("./Input/Spiritual Terms Eval with defs and refs for IT 1.docx")
+# translator.translate(file, "eng_Latn", "spa_Latn", "NLLB-distilled")
