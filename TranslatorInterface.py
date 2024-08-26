@@ -8,8 +8,10 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline, TRANSFO
 
 class TranslatorInterface(ABC):
     @abstractmethod
-    def translate(self, filePath: Path, source_language: str, target_language: str, model_name: str) -> str:
-        """Translate the given text from the source language to the target language."""
+    def translate(self, filePath: Path, source_language: str, target_language: str, model_name: str) -> Path | None:
+        """Translate the given text from the source language to the target language. Returns path to translated file
+            or None if file translation was unsuccessful. 
+        """
         pass
 
     def _prepare_language_detection_model(self):
