@@ -5,7 +5,7 @@ import os
 import torch
 from collections import Counter
 from pathlib import Path
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline, TRANSFORMERS_CACHE
+from transformers import pipeline
 from nltk.tokenize import sent_tokenize
 from zipfile import BadZipFile
 import nltk
@@ -161,19 +161,18 @@ class DocxTranslator(TranslatorInterface):
 
         # Save the translated document
         document.save(output_path)
-        self._unload_model(model, tokenizer)          
 
-        self._unload_model(model, tokenizer)
+        # Frees loaded model and tokenizer
+        self._unload_model(model, tokenizer)   
 
+        # Frees the pipeline
+        del translation_pipeline
+        gc.collect()
+        torch.cuda.empty_cache()   
+
+        return output_path   
 
 # Example usage:
 translator = DocxTranslator()
 file = Path("./Input/Spiritual Terms Eval with defs and refs for IT 1.docx")
-
-translator.translate(file, "eng_Latn", "spa_Latn", "NLLB")
-# # Example of translating text
-# translated_text = translator.translate("Hello, world!", "eng_Latn", "fra_Latn", "NLLB-distilled")
-# print(translated_text)
-
-# # Translate files in a folder
-# translator._translate_files()
+translator.translate(file, "eng_Latn", "spa_Latn", "NLLB-distilled")
