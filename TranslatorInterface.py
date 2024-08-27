@@ -5,6 +5,22 @@ import os
 import torch
 from pathlib import Path
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline, TRANSFORMERS_CACHE
+from enum import Enum
+
+# Example usage
+# file_type = FileType.from_extension(".json")
+# print(file_type)  # Output: FileType.JSON
+class SupportedFileType(Enum):
+    TEXT = "txt"
+    DOCX = "docx"
+
+    @staticmethod
+    def from_extension(extension: str):
+        for file_type in FileType:
+            if file_type.value == extension:
+                return file_type
+        raise ValueError(f"Unsupported file extension: {extension}")
+
 
 class TranslatorInterface(ABC):
     @abstractmethod

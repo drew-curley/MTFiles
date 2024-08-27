@@ -10,7 +10,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from zipfile import BadZipFile
 import nltk
 import json
-from TranslatorInterface import TranslatorInterface
+from TranslatorInterface import TranslatorInterface, SupportedFileType
 from datasets import Dataset, DatasetDict
 
 
@@ -21,8 +21,8 @@ class TxtTranslator(TranslatorInterface):
 
     def __init__(self, pretrained_lang_model="./lid218e.bin"):
         self.chunk_word_count = 200
-        self.ext_in = "txt"
-        self.ext_out = "txt"
+        self.ext_in = SupportedFileType.TEXT.value 
+        self.ext_out = SupportedFileType.TEXT.value
         self.pretrained_lang_model = pretrained_lang_model
 
         with open("./constants/model_checkpoints.json", 'r') as json_file:
