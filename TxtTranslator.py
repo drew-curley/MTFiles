@@ -11,6 +11,8 @@ from zipfile import BadZipFile
 import nltk
 import json
 from TranslatorInterface import TranslatorInterface
+from datasets import Dataset, DatasetDict
+
 
 nltk.download('punkt')
 nltk.download('punkt_tab')
@@ -46,8 +48,8 @@ class TxtTranslator(TranslatorInterface):
         return languageCounter
 
 
-    def translate(self, filePath, source_language, target_language, model_name):
 
+    def translate(self, filePath, source_language, target_language, model_name):
         if target_language not in self.languages:
             print(f"Cannot translate. {target_language} is not a supported target language.")
             return
@@ -59,7 +61,7 @@ class TxtTranslator(TranslatorInterface):
         model, tokenizer = self._load_model(self.checkpoints[model_name])
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        # TODO: figure out how to prevent this from running sequentially, and instead, use the GPU to the fullest. 
+        # Create translation pipeline
         translation_pipeline = pipeline('translation',
                                         model=model,
                                         tokenizer=tokenizer,
@@ -68,9 +70,8 @@ class TxtTranslator(TranslatorInterface):
                                         max_length=400,
                                         device=device)
 
+        # Read the file and tokenize
         chunks = []
-        translated_chunks = []
-
         with open(filePath, 'r', encoding='utf-8') as file:
             text = file.read()
             words = word_tokenize(text)
@@ -88,30 +89,19 @@ class TxtTranslator(TranslatorInterface):
                     current_chunk = []
                     current_word_count = 0
             
-            # Handle any remaining words in the last chunk
             if current_chunk:
                 chunk_text = ' '.join(current_chunk)
                 chunks.append(chunk_text)
 
-        # TODO: optimize this by making chunks hold an array of sent_tokenize(chunk), that way I am not making duplicate
-        #  calls to sent_tokenize. 
-        for chunk in chunks:
-            sentences = sent_tokenize(chunk)
-            for sentence in sentences:
-                languages_in_chunk = self._get_languages(sentence)
-                top_language_in_chunk = languages_in_chunk.most_common(1)[0][0]
-                chunk_is_src_lang = (top_language_in_chunk == source_language)
-                
-                if not chunk_is_src_lang:
-                    print(f"Cannot translate. File is in {top_language_in_chunk} expected {source_language}")
-                    return
+        # Create a Dataset from the chunks
+        dataset = Dataset.from_dict({"text": chunks})
 
-        # Now translate all chunks
-        for chunk in chunks:
-            sentences = sent_tokenize(chunk)
-            for sentence in sentences:
-                translated_sentence = translation_pipeline(sentence)[0]['translation_text']
-                translated_chunks.append(translated_sentence)
+        translated_dataset = dataset.map(
+            lambda batch: {'translation_text': [item['translation_text'] for item in translation_pipeline(batch['text'])]},
+            batched=True
+        )
+
+        translated_chunks = translated_dataset['translation_text']
 
         self._unload_model(model, tokenizer)
 
@@ -123,7 +113,7 @@ class TxtTranslator(TranslatorInterface):
         file_name = self.languages[target_language]
         output_dir_for_model = Path(f'./Translated/{model_name}')
         output_dir_for_model.mkdir(parents=True, exist_ok=True)
-        output_file_path = output_dir_for_model / f"{file_path.stem}_{file_name}.{self.ext_out}"
+        output_file_path = output_dir_for_model / f"{filePath.stem}_{file_name}.{self.ext_out}"
 
         with open(output_file_path, 'w', encoding='utf-8') as out_f:
             for translated_chunk in translated_chunks:
