@@ -120,7 +120,11 @@ class TxtTranslator(TranslatorInterface):
         gc.collect()
         torch.cuda.empty_cache()   
 
-        output_file_path = filePath.with_name(f"{filePath.stem}_translated.{self.ext_out}")
+        file_name = self.languages[target_language]
+        output_dir_for_model = Path(f'./Translated/{model_name}')
+        output_dir_for_model.mkdir(parents=True, exist_ok=True)
+        output_file_path = output_dir_for_model / f"{file_path.stem}_{file_name}.{self.ext_out}"
+
         with open(output_file_path, 'w', encoding='utf-8') as out_f:
             for translated_chunk in translated_chunks:
                 out_f.write(translated_chunk + "\n")
@@ -130,6 +134,6 @@ class TxtTranslator(TranslatorInterface):
 
 
 # Example usage:
-# translator = TxtTranslator()
-# file_path = Path("/mnt/c/Users/hilld/Documents/Github/MTFiles/Input/test.txt")
-# translated_text = translator.translate(file_path, "eng_Latn", "fra_Latn", "NLLB-distilled")
+translator = TxtTranslator()
+file_path = Path("/mnt/c/Users/hilld/Documents/Github/MTFiles/Input/test1.txt")
+translated_text = translator.translate(file_path, "eng_Latn", "fra_Latn", "NLLB-distilled")
