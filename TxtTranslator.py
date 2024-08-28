@@ -33,14 +33,25 @@ class TxtTranslator(TranslatorInterface):
 
         self._prepare_language_detection_model()
 
-    def _get_languages(self, text):
+    def _get_languages(self, chunk_dataset):
         fasttext_model = fasttext.load_model(self.pretrained_lang_model)
         languageCounter = Counter()
 
-        predictions = fasttext_model.predict(text, k=1)
-        output_lang = predictions[0][0].replace('__label__', '')
-        languageCounter.update([output_lang])
+        # Apply the language detection function to the dataset in batches
+        detected_languages = chunk_dataset.map(
+            lambda batch: {
+                "languages": [
+                    fasttext_model.predict(text, k=1)[0][0].replace('__label__', '')
+                    for text in batch['text']
+                ]
+            },
+            batched=True,
+            batch_size=32
+        )
 
+        # Update the Counter with detected languages
+        languageCounter.update(detected_languages['languages'])
+        
         del fasttext_model
         gc.collect()
         torch.cuda.empty_cache()
@@ -95,6 +106,17 @@ class TxtTranslator(TranslatorInterface):
 
         # Create a Dataset from the chunks
         dataset = Dataset.from_dict({"text": chunks})
+
+
+        # Perform language detection
+        detected_languages = self._get_languages(dataset)
+
+        # Check if the detected language matches the source language
+        if detected_languages.most_common(1)[0][0] != source_language:
+            print(f"Warning: Detected language does not match the specified source language {source_language}.")
+            return
+            # Optionally, you can handle this case as needed, e.g., skip translation, raise an error, etc.
+
 
         translated_dataset = dataset.map(
             lambda batch: {'translation_text': [item['translation_text'] for item in translation_pipeline(batch['text'])]},
