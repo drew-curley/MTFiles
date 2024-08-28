@@ -107,7 +107,6 @@ class TxtTranslator(TranslatorInterface):
         # Create a Dataset from the chunks
         dataset = Dataset.from_dict({"text": chunks})
 
-
         # Perform language detection
         detected_languages = self._get_languages(dataset)
 
@@ -115,8 +114,6 @@ class TxtTranslator(TranslatorInterface):
         if detected_languages.most_common(1)[0][0] != source_language:
             print(f"Warning: Detected language does not match the specified source language {source_language}.")
             return
-            # Optionally, you can handle this case as needed, e.g., skip translation, raise an error, etc.
-
 
         translated_dataset = dataset.map(
             lambda batch: {'translation_text': [item['translation_text'] for item in translation_pipeline(batch['text'])]},
