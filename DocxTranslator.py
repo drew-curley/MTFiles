@@ -34,7 +34,6 @@ class DocxTranslator(TranslatorInterface):
 
 
     def translate(self, filePath, source_language, target_language, model_name):
-        print("translating")
         file = filePath.resolve()
 
         if target_language not in self.languages:
@@ -107,11 +106,11 @@ class DocxTranslator(TranslatorInterface):
 
     def accumulate_text(self, file):
         """
-        Accumulates all text from paragraphs and tables in the DOCX file into an array of strings.
-        
+        Accumulates all text from paragraphs and tables within a DOCX file into a list of strings.
+
         Args:
-            file (Path): Path to the DOCX file.
-        
+            file (Path): The path to the DOCX file from which to extract text.
+
         Returns:
             List[str]: A list of strings where each string contains text from either a paragraph or a cell in a table.
         """
@@ -136,19 +135,16 @@ class DocxTranslator(TranslatorInterface):
 
 
     def _get_languages(self, all_text):
-        return self._detect_language_with_dataset(all_text)
-
-
-    def _detect_language_with_dataset(self, texts):
         """
-        Detects the language of each text segment using a dataset for parallel processing.
-        
+        Detects the languages present in the text segments extracted from the DOCX file.
+
         Args:
-            texts (List[str]): List of text segments to check language.
-        
+            all_text (List[str]): A list of text segments from the DOCX file.
+
         Returns:
-            Counter: A Counter object with the detected languages.
+            Counter: A Counter object that represents the frequency of detected languages.
         """
+
         fasttext_model = fasttext.load_model(self.pretrained_lang_model)
 
         # Define a function to detect the language for a batch of texts
@@ -158,7 +154,7 @@ class DocxTranslator(TranslatorInterface):
             return {'language': predictions}
 
         # Create a dataset from the accumulated texts
-        dataset = Dataset.from_dict({"text": texts})
+        dataset = Dataset.from_dict({"text": all_text})
 
         # Apply the language detection function to the dataset in parallel
         language_dataset = dataset.map(detect_language, batched=True, batch_size=32)
@@ -174,7 +170,14 @@ class DocxTranslator(TranslatorInterface):
 
 
     def _replace_text_in_runs(self, paragraph, translated_text):
-        """Replace text in each run while preserving the original formatting."""
+        """
+        Replaces the text in each run of a paragraph while preserving the original formatting.
+
+        Args:
+            paragraph (docx.text.paragraph.Paragraph): The paragraph object containing runs to update.
+            translated_text (str): The translated text to replace the original text in the runs.
+        """
+
         original_text = "".join(run.text for run in paragraph.runs)
         # Ensure we correctly replace text while preserving formatting
         if len(original_text) == len(translated_text):
@@ -198,6 +201,14 @@ class DocxTranslator(TranslatorInterface):
 
     
     def _update_document_from_translation_map(self, translation_map, document):
+        """
+        Updates the DOCX document by replacing the original text in paragraphs and tables with translated text.
+
+        Args:
+            translation_map (dict): A dictionary mapping original text to translated text.
+            document (docx.document.Document): The DOCX document object to update.
+        """
+
         # Replace text in the document
         for paragraph in document.paragraphs:
             if paragraph.text.strip():
