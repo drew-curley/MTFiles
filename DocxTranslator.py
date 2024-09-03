@@ -205,7 +205,111 @@ class DocxTranslator(TranslatorInterface):
 
         return output_path   
 
+    def _translate_faster(self, filePath, source_language, target_language, model_name):
+        file = filePath.resolve()
+
+        if target_language not in self.languages:
+            print(f"Cannot translate. {target_language} is not a supported target language.")
+            return
+
+        try:
+            document = docx.Document(file)
+        except BadZipFile:
+            print(f"BadZipFile Error on opening {file}")
+            return
+
+        languages_in_file = self._get_languages(file)
+        top_language_in_file = languages_in_file.most_common(1)[0][0]
+        file_is_src_lang = (top_language_in_file == source_language)
+
+        if not file_is_src_lang:
+            print(f"Cannot translate. File is in {top_language_in_file} expected {source_language}")
+            return
+
+        if model_name not in self.checkpoints:
+            print(f"Cannot translate. {model_name} is not a supported model.")
+            return 
+
+        print(f"Loading model: {self.checkpoints[model_name]}")
+        model, tokenizer = self._load_model(self.checkpoints[model_name])
+
+        file_name = self.languages[target_language]
+        output_dir_for_model = Path(f'./Translated/{model_name}')
+        output_dir_for_model.mkdir(parents=True, exist_ok=True)
+        output_path = output_dir_for_model / f"{file.stem}_{file_name}.{self.ext_out}"
+
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        translation_pipeline = pipeline('translation',
+                                        model=model,
+                                        tokenizer=tokenizer,
+                                        src_lang=source_language,
+                                        tgt_lang=target_language,
+                                        max_length=400,
+                                        device=device)
+
+        # Extract text from paragraphs and tables
+        texts = []
+        for paragraph in document.paragraphs:
+            if paragraph.text.strip():
+                texts.append(paragraph.text)
+
+        for table in document.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        if paragraph.text.strip():
+                            texts.append(paragraph.text)
+
+        # Create a dataset from the text
+        dataset = Dataset.from_dict({"text": texts})
+
+        def translate_batch(batch):
+            translations = translation_pipeline(batch['text'], batch_size=16)
+            return {'translated_text': [t['translation_text'] for t in translations]}
+
+        # Translate the texts in batches
+        translated_dataset = dataset.map(translate_batch, batched=True, batch_size=16)
+
+
+
+        # =============== Split into a method  ===============
+        # Create a dictionary to map original text to translated text
+        # NOTE: this map could be useful while comparing translation results with input text
+        #  and seeing decisions the model made for translation at the paragraph level
+        translation_map = dict(zip(texts, translated_dataset['translated_text']))
+
+        # Replace text in the document
+        for paragraph in document.paragraphs:
+            if paragraph.text.strip():
+                original_text = paragraph.text
+                if original_text in translation_map:
+                    self._replace_text_in_runs(paragraph, translation_map[original_text])
+
+        for table in document.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        if paragraph.text.strip():
+                            original_text = paragraph.text
+                            if original_text in translation_map:
+                                self._replace_text_in_runs(paragraph, translation_map[original_text])
+
+        # =============== Split into a method  ===============
+        
+        # Save the translated document
+        document.save(output_path)
+
+        # Frees loaded model and tokenizer
+        self._unload_model(model, tokenizer)
+
+        # Frees the pipeline
+        del translation_pipeline
+        gc.collect()
+        torch.cuda.empty_cache()
+
+        return output_path
+
 # Example usage:
 translator = DocxTranslator()
-file = Path("./Input/Spiritual Terms Eval with defs and refs for IT 1.docx")
+file = Path("./Input/test2.docx")
 translator.translate(file, "eng_Latn", "spa_Latn", "NLLB-distilled")
