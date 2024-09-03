@@ -227,6 +227,6 @@ class DocxTranslator(TranslatorInterface):
 
 
 # # Example usage:
-translator = DocxTranslator()
-file = Path("./Input/test2.docx")
-translator.translate(file, "eng_Latn", "spa_Latn", "NLLB-distilled")
+# translator = DocxTranslator()
+# file = Path("./Input/test2.docx")
+# translator.translate(file, "eng_Latn", "spa_Latn", "NLLB-distilled")
