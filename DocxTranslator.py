@@ -32,15 +32,6 @@ class DocxTranslator(TranslatorInterface):
         self._prepare_language_detection_model()
 
 
-    def _translate_paragraph(self, paragraph, translation_pipeline):
-        """Translate the content of a paragraph and replace its text."""
-        original_text = paragraph.text
-        if original_text.strip():  # Only translate if the paragraph is not empty
-            print(f"translting {original_text}")
-            translated_text = translation_pipeline(original_text)[0]['translation_text']
-            self._replace_text_in_runs(paragraph, translated_text)
-
-
     def _replace_text_in_runs(self, paragraph, translated_text):
         """Replace text in each run while preserving the original formatting."""
         original_text = "".join(run.text for run in paragraph.runs)
@@ -63,14 +54,6 @@ class DocxTranslator(TranslatorInterface):
             if current_char_index < len(translated_text):
                 remaining_text = translated_text[current_char_index:]
                 paragraph.add_run(remaining_text)
-
-
-    def _translate_table(self, table, translation_pipeline):
-        """Translate all the cells in a table."""
-        for row in table.rows:
-            for cell in row.cells:
-                for paragraph in cell.paragraphs:
-                    self._translate_paragraph(paragraph, translation_pipeline)
 
 
     def _get_languages(self, all_text):
@@ -141,69 +124,6 @@ class DocxTranslator(TranslatorInterface):
         return language_counter
 
     
-    def translate(self, filePath, source_language, target_language, model_name):
-        file = filePath.resolve()
-
-        if target_language not in self.languages:
-            print(f"Cannot translate. {target_language} is not a supported target language.")
-            return
-
-        try:
-            document = docx.Document(file)
-        except BadZipFile:
-            print(f"BadZipFile Error on opening {file}")
-            return
-
-        languages_in_file = self._get_languages(file)
-        top_language_in_file = languages_in_file.most_common(1)[0][0]
-        file_is_src_lang = (top_language_in_file == source_language)
-
-        if not file_is_src_lang:
-            print(f"Cannot translate. File is in {top_language_in_file} expected {source_language}")
-            return
-
-        if model_name not in self.checkpoints:
-            print(f"Cannot translate. {model_name} is not a supported model.")
-            return 
-
-        print(f"Loading model: {self.checkpoints[model_name]}")
-        model, tokenizer = self._load_model(self.checkpoints[model_name])
-
-        file_name = self.languages[target_language]
-        output_dir_for_model = Path(f'./Translated/{model_name}')
-        output_dir_for_model.mkdir(parents=True, exist_ok=True)
-        output_path = output_dir_for_model / f"{file.stem}_{file_name}.{self.ext_out}"
-
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-        translation_pipeline = pipeline('translation',
-                                        model=model,
-                                        tokenizer=tokenizer,
-                                        src_lang=source_language,
-                                        tgt_lang=target_language,
-                                        max_length=400,
-                                        device=device)
-
-        # Iterate over paragraphs and tables to translate the content
-        for paragraph in document.paragraphs:
-            self._translate_paragraph(paragraph, translation_pipeline)
-
-        for table in document.tables:
-            self._translate_table(table, translation_pipeline)
-
-        # Save the translated document
-        document.save(output_path)
-
-        # Frees loaded model and tokenizer
-        self._unload_model(model, tokenizer)   
-
-        # Frees the pipeline
-        del translation_pipeline
-        gc.collect()
-        torch.cuda.empty_cache()   
-
-        return output_path   
-
     def _update_document_from_translation_map(self, translation_map, document):
         # Replace text in the document
         for paragraph in document.paragraphs:
@@ -222,7 +142,7 @@ class DocxTranslator(TranslatorInterface):
                                 self._replace_text_in_runs(paragraph, translation_map[original_text])
 
 
-    def _translate_faster(self, filePath, source_language, target_language, model_name):
+    def translate(self, filePath, source_language, target_language, model_name):
         file = filePath.resolve()
 
         if target_language not in self.languages:
@@ -292,7 +212,7 @@ class DocxTranslator(TranslatorInterface):
 
         return output_path
 
-# Example usage:
-translator = DocxTranslator()
-file = Path("./Input/test.docx")
-translator._translate_faster(file, "eng_Latn", "spa_Latn", "NLLB-distilled")
+# # Example usage:
+# translator = DocxTranslator()
+# file = Path("./Input/test2.docx")
+# translator.translate(file, "eng_Latn", "spa_Latn", "NLLB-distilled")
