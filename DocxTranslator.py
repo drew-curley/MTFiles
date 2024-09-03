@@ -73,8 +73,7 @@ class DocxTranslator(TranslatorInterface):
                     self._translate_paragraph(paragraph, translation_pipeline)
 
 
-    def _get_languages(self, file):
-        all_text = self.accumulate_text(file)
+    def _get_languages(self, all_text):
         return self._detect_language_with_dataset(all_text)
 
 
@@ -205,6 +204,24 @@ class DocxTranslator(TranslatorInterface):
 
         return output_path   
 
+    def _update_document_from_translation_map(self, translation_map, document):
+        # Replace text in the document
+        for paragraph in document.paragraphs:
+            if paragraph.text.strip():
+                original_text = paragraph.text
+                if original_text in translation_map:
+                    self._replace_text_in_runs(paragraph, translation_map[original_text])
+
+        for table in document.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        if paragraph.text.strip():
+                            original_text = paragraph.text
+                            if original_text in translation_map:
+                                self._replace_text_in_runs(paragraph, translation_map[original_text])
+
+
     def _translate_faster(self, filePath, source_language, target_language, model_name):
         file = filePath.resolve()
 
@@ -217,8 +234,10 @@ class DocxTranslator(TranslatorInterface):
         except BadZipFile:
             print(f"BadZipFile Error on opening {file}")
             return
+        
+        all_text = self.accumulate_text(file)
 
-        languages_in_file = self._get_languages(file)
+        languages_in_file = self._get_languages(all_text)
         top_language_in_file = languages_in_file.most_common(1)[0][0]
         file_is_src_lang = (top_language_in_file == source_language)
 
@@ -247,21 +266,8 @@ class DocxTranslator(TranslatorInterface):
                                         max_length=400,
                                         device=device)
 
-        # Extract text from paragraphs and tables
-        texts = []
-        for paragraph in document.paragraphs:
-            if paragraph.text.strip():
-                texts.append(paragraph.text)
-
-        for table in document.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    for paragraph in cell.paragraphs:
-                        if paragraph.text.strip():
-                            texts.append(paragraph.text)
-
         # Create a dataset from the text
-        dataset = Dataset.from_dict({"text": texts})
+        dataset = Dataset.from_dict({"text": all_text})
 
         def translate_batch(batch):
             translations = translation_pipeline(batch['text'], batch_size=16)
@@ -270,32 +276,9 @@ class DocxTranslator(TranslatorInterface):
         # Translate the texts in batches
         translated_dataset = dataset.map(translate_batch, batched=True, batch_size=16)
 
+        translation_map = dict(zip(all_text, translated_dataset['translated_text']))
+        self._update_document_from_translation_map(translation_map, document)
 
-
-        # =============== Split into a method  ===============
-        # Create a dictionary to map original text to translated text
-        # NOTE: this map could be useful while comparing translation results with input text
-        #  and seeing decisions the model made for translation at the paragraph level
-        translation_map = dict(zip(texts, translated_dataset['translated_text']))
-
-        # Replace text in the document
-        for paragraph in document.paragraphs:
-            if paragraph.text.strip():
-                original_text = paragraph.text
-                if original_text in translation_map:
-                    self._replace_text_in_runs(paragraph, translation_map[original_text])
-
-        for table in document.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    for paragraph in cell.paragraphs:
-                        if paragraph.text.strip():
-                            original_text = paragraph.text
-                            if original_text in translation_map:
-                                self._replace_text_in_runs(paragraph, translation_map[original_text])
-
-        # =============== Split into a method  ===============
-        
         # Save the translated document
         document.save(output_path)
 
@@ -311,5 +294,5 @@ class DocxTranslator(TranslatorInterface):
 
 # Example usage:
 translator = DocxTranslator()
-file = Path("./Input/test2.docx")
-translator.translate(file, "eng_Latn", "spa_Latn", "NLLB-distilled")
+file = Path("./Input/test.docx")
+translator._translate_faster(file, "eng_Latn", "spa_Latn", "NLLB-distilled")
