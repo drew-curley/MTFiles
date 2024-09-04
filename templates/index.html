@@ -1,0 +1,60 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language and Model Selection</title>
+</head>
+<body>
+    <h1>AI Translator</h1>
+    <form id="translationForm" action="/submit" method="post" enctype="multipart/form-data">
+        <fieldset>
+            <legend>Upload Files</legend>
+            <input type="file" name="files" multiple><br><br>
+        </fieldset>
+        <fieldset>
+            <legend>Select Model</legend>
+            <label><input type="checkbox" name="models" value="NLLB-distilled"> NLLB-distilled</label><br>
+            <label><input type="checkbox" name="models" value="NLLB"> NLLB</label><br>
+        </fieldset>
+        <fieldset>
+            <legend>Select Languages</legend>
+            <label><input type="checkbox" name="languages" value="amh_Ethi"> Ethiopian</label><br>
+            <label><input type="checkbox" name="languages" value="arb_Arab"> Arabic</label><br>
+            <label><input type="checkbox" name="languages" value="asm_Beng"> Assamese</label><br>
+            <label><input type="checkbox" name="languages" value="ben_Beng"> Bangal</label><br>
+            <label><input type="checkbox" name="languages" value="por_Latn"> BPortugese</label><br>
+            <label><input type="checkbox" name="languages" value="mya_Mymr"> Burmese</label><br>
+            <label><input type="checkbox" name="languages" value="ceb_Latn"> Cebuano</label><br>
+            <label><input type="checkbox" name="languages" value="zsm_Latn"> Chinese</label><br>
+            <label><input type="checkbox" name="languages" value="fra_Latn"> French</label><br>
+            <label><input type="checkbox" name="languages" value="guj_Gujr"> Gujarati</label><br>
+            <label><input type="checkbox" name="languages" value="hau_Latn"> Hausa</label><br>
+            <label><input type="checkbox" name="languages" value="hin_Deva"> Hindi</label><br>
+            <label><input type="checkbox" name="languages" value="ilo_Latn"> Illocano</label><br>
+            <label><input type="checkbox" name="languages" value="ind_Latn"> Indonesian</label><br>
+            <label><input type="checkbox" name="languages" value="kan_Knda"> Kannada</label><br>
+            <label><input type="checkbox" name="languages" value="khm_Khmr"> Khmer</label><br>
+            <label><input type="checkbox" name="languages" value="lao_Laoo"> Laotian</label><br>
+            <label><input type="checkbox" name="languages" value="spa_Latn"> LASpanish</label><br>
+            <label><input type="checkbox" name="languages" value="mal_Mlym"> Malayalam</label><br>
+            <label><input type="checkbox" name="languages" value="npi_Deva"> Nepali</label><br>
+            <label><input type="checkbox" name="languages" value="ory_Orya"> Oriya</label><br>
+            <label><input type="checkbox" name="languages" value="plt_Latn"> PlatMalagasy</label><br>
+            <label><input type="checkbox" name="languages" value="pan_Guru"> EPunjabi</label><br>
+            <label><input type="checkbox" name="languages" value="rus_Cyrl"> Russian</label><br>
+            <label><input type="checkbox" name="languages" value="swh_Latn"> Swahili</label><br>
+            <label><input type="checkbox" name="languages" value="tgl_Latn"> Tagalog</label><br>
+            <label><input type="checkbox" name="languages" value="tam_Taml"> Tamil</label><br>
+            <label><input type="checkbox" name="languages" value="tel_Telu"> Telugu</label><br>
+            <label><input type="checkbox" name="languages" value="tha_Thai"> Thai</label><br>
+            <label><input type="checkbox" name="languages" value="tpi_Latn"> TokPisin</label><br>
+            <label><input type="checkbox" name="languages" value="urd_Arab"> Urdu</label><br>
+            <label><input type="checkbox" name="languages" value="vie_Latn"> Vietnamese</label><br>
+        </fieldset>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
