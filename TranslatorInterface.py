@@ -16,11 +16,10 @@ class SupportedFileType(Enum):
 
     @staticmethod
     def from_extension(extension: str):
-        for file_type in FileType:
+        for file_type in SupportedFileType:
             if file_type.value == extension:
                 return file_type
         raise ValueError(f"Unsupported file extension: {extension}")
-
 
 class TranslatorInterface(ABC):
     @abstractmethod
@@ -39,7 +38,7 @@ class TranslatorInterface(ABC):
         model_dir = f"{TRANSFORMERS_CACHE}/{model_name}"
 
         if not os.path.exists(model_dir):
-            print(f"{model_name} not found")
+            print(f"{model_name} not found")        
             tokenizer = AutoTokenizer.from_pretrained(model_name)
             model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
             model.save_pretrained(model_dir)
