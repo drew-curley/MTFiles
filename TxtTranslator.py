@@ -143,6 +143,6 @@ class TxtTranslator(TranslatorInterface):
 
 
 # Example usage:
-translator = TxtTranslator()
-file_path = Path("/mnt/c/Users/hilld/Documents/Github/MTFiles/Input/test1.txt")
-translated_text = translator.translate(file_path, "eng_Latn", "fra_Latn", "NLLB-distilled")
+# translator = TxtTranslator()
+# file_path = Path("/mnt/c/Users/hilld/Documents/Github/MTFiles/Input/test1.txt")
+# translated_text = translator.translate(file_path, "eng_Latn", "fra_Latn", "NLLB-distilled")
