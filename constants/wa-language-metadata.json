@@ -1,0 +1,365 @@
+{
+    "wa_language_metadata": [
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Latin American Spanish",
+                "iso6393": "spa",
+                "supported_nllb_variants": [
+                    "spa_Latn"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Assamese",
+                "iso6393": "asm",
+                "supported_nllb_variants": [
+                    "asm_Beng"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Bengali, Bangla",
+                "iso6393": "ben",
+                "supported_nllb_variants": [
+                    "ben_Beng"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "English",
+                "iso6393": "eng",
+                "supported_nllb_variants": [
+                    "eng_Latn"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Persian (Farsi)",
+                "iso6393": "fas",
+                "supported_nllb_variants": []
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "French",
+                "iso6393": "fra",
+                "supported_nllb_variants": [
+                    "fra_Latn"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Gujarati",
+                "iso6393": "guj",
+                "supported_nllb_variants": [
+                    "guj_Gujr"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Hausa",
+                "iso6393": "hau",
+                "supported_nllb_variants": [
+                    "hau_Latn"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Hindi",
+                "iso6393": "hin",
+                "supported_nllb_variants": [
+                    "hin_Deva"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Indonesian",
+                "iso6393": "ind",
+                "supported_nllb_variants": [
+                    "ind_Latn"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Kannada",
+                "iso6393": "kan",
+                "supported_nllb_variants": [
+                    "kan_Knda"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Laotian",
+                "iso6393": "lao",
+                "supported_nllb_variants": [
+                    "lao_Laoo"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Malayalam",
+                "iso6393": "mal",
+                "supported_nllb_variants": [
+                    "mal_Mlym"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Marathi (Marāṭhī)",
+                "iso6393": "mar",
+                "supported_nllb_variants": [
+                    "mar_Deva"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Burmese",
+                "iso6393": "mya",
+                "supported_nllb_variants": [
+                    "mya_Mymr"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Nepali",
+                "iso6393": "nep",
+                "supported_nllb_variants": []
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Odia",
+                "iso6393": "ori",
+                "supported_nllb_variants": []
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Punjabi, Eastern",
+                "iso6393": "pan",
+                "supported_nllb_variants": [
+                    "pan_Guru"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Russian",
+                "iso6393": "rus",
+                "supported_nllb_variants": [
+                    "rus_Cyrl"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Tamil",
+                "iso6393": "tam",
+                "supported_nllb_variants": [
+                    "tam_Taml"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Telugu",
+                "iso6393": "tel",
+                "supported_nllb_variants": [
+                    "tel_Telu"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Tok Pisin",
+                "iso6393": "tpi",
+                "supported_nllb_variants": [
+                    "tpi_Latn"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Urdu",
+                "iso6393": "urd",
+                "supported_nllb_variants": [
+                    "urd_Arab"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Vietnamese",
+                "iso6393": "vie",
+                "supported_nllb_variants": [
+                    "vie_Latn"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Chinese",
+                "iso6393": "zho",
+                "supported_nllb_variants": [
+                    "zho_Hans",
+                    "zho_Hant"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Tagalog",
+                "iso6393": "tgl",
+                "supported_nllb_variants": [
+                    "tgl_Latn"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Thai",
+                "iso6393": "tha",
+                "supported_nllb_variants": [
+                    "tha_Thai"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Brazilian Portuguese",
+                "iso6393": "por",
+                "supported_nllb_variants": [
+                    "por_Latn"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Khmer",
+                "iso6393": "khm",
+                "supported_nllb_variants": [
+                    "khm_Khmr"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Swahili",
+                "iso6393": "swa",
+                "supported_nllb_variants": []
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Amharic",
+                "iso6393": "amh",
+                "supported_nllb_variants": [
+                    "amh_Ethi"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Cebuano",
+                "iso6393": "ceb",
+                "supported_nllb_variants": [
+                    "ceb_Latn"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Ilocano",
+                "iso6393": "ilo",
+                "supported_nllb_variants": [
+                    "ilo_Latn"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Malagasy, Plateau",
+                "iso6393": "plt",
+                "supported_nllb_variants": [
+                    "plt_Latn"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Urdu Devanagari Script",
+                "iso6393": "urd",
+                "supported_nllb_variants": [
+                    "urd_Arab"
+                ]
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Papuan Malay",
+                "iso6393": "pmy",
+                "supported_nllb_variants": []
+            }
+        },
+        {
+            "is_gateway": true,
+            "language": {
+                "english_name": "Arabic, Standard",
+                "iso6393": "arb",
+                "supported_nllb_variants": [
+                    "arb_Arab"
+                ]
+            }
+        }
+    ]
+}
