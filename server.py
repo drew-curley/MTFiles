@@ -17,7 +17,15 @@ translator_factory = TranslatorFactory()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    with open('./constants/languages.json', 'r') as file:
+        languages = json.load(file)
+    with open('./constants/model_checkpoints.json', 'r') as file:
+        models = json.load(file)
+    
+    target_languages_list = [{"value": key, "label": value} for key, value in languages.items()]
+    models_list = [{"value": key, "label": key} for key in models]
+    
+    return render_template('index.html', target_languages=target_languages_list, models=models_list)
 
 
 @app.route('/submit', methods=['POST'])
