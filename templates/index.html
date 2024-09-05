@@ -21,9 +21,15 @@
             {% endfor %}
         </fieldset>
         <fieldset>
-            <legend>Select Languages</legend>
+            <legend>Select Input Language</legend>
+            {% for language in wa_language_metadata %}
+                <label><input type="radio" name="input_languages" value="{{ language.value }}"> {{ language.label }}</label><br>
+            {% endfor %}
+        </fieldset>
+        <fieldset>
+            <legend>Select Target Languages</legend>
             {% for language in target_languages %}
-                <label><input type="checkbox" name="languages" value="{{ language.value }}"> {{ language.label }}</label><br>
+                <label><input type="checkbox" name="target_languages" value="{{ language.value }}"> {{ language.label }}</label><br>
             {% endfor %}
         </fieldset>
         <input type="submit" value="Submit">

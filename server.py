@@ -21,49 +21,59 @@ def index():
         languages = json.load(file)
     with open('./constants/model_checkpoints.json', 'r') as file:
         models = json.load(file)
+    with open('./constants/wa-language-metadata.json', 'r') as file:
+        wa_language_metadata = json.load(file)['wa_language_metadata']
     
     target_languages_list = [{"value": key, "label": value} for key, value in languages.items()]
     models_list = [{"value": key, "label": key} for key in models]
+    wa_language_metadata_list = [
+        {
+            "value": item['language']['supported_nllb_variants'][0] if item['language']['supported_nllb_variants'] else item['language']['iso6393'],
+            "label": item['language']['english_name']
+        }
+        for item in wa_language_metadata
+    ]
+    print(wa_language_metadata_list)
     
-    return render_template('index.html', target_languages=target_languages_list, models=models_list)
+    return render_template('index.html', target_languages=target_languages_list, wa_language_metadata=wa_language_metadata_list, models=models_list)
 
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    selected_target_languages = request.form.getlist('languages')
+    selected_target_languages = request.form.getlist('target_languages')
     selected_models = request.form.getlist('models')
     uploaded_files = request.files.getlist('files')
-    input_language = "eng_Latn"
+    selected_input_languages = request.form.getlist('input_languages')
     
     output_paths = []
-    
-    for target_language in selected_target_languages:
-        for model in selected_models:
-            print(f"{target_language} {model}")
+    for input_language in selected_input_languages:
+        for target_language in selected_target_languages:
+            for model in selected_models:
+                print(f"{target_language} {model}")
 
-            for file in uploaded_files:
-                # TODO: clean this up. Be able to pass in file type to get_translator
-                file_type = file.mimetype  # Get the file type (MIME type)
-                file_extension = mimetypeToFiletypeMap[file_type]
+                for file in uploaded_files:
+                    # TODO: clean this up. Be able to pass in file type to get_translator
+                    file_type = file.mimetype  # Get the file type (MIME type)
+                    file_extension = mimetypeToFiletypeMap[file_type]
 
-                # TODO: see if I can do this without making a temp file. Just use the file that is given
-                # Save the uploaded file to a temporary location
-                with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_extension}") as temp_file:
-                    temp_file.write(file.read())
-                    file.seek(0)
-                    temp_file_path = temp_file.name
+                    # TODO: see if I can do this without making a temp file. Just use the file that is given
+                    # Save the uploaded file to a temporary location
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_extension}") as temp_file:
+                        temp_file.write(file.read())
+                        file.seek(0)
+                        temp_file_path = temp_file.name
 
-                    print(temp_file_path)
-                    # Create translator and translate the file
-                    translator = translator_factory.get_translator(file_extension)
-                    output_path = translator.translate(Path(temp_file_path), input_language, target_language, model)
-                    
-                # Store the output path
-                if output_path:
-                    output_paths.append(str(output_path))  # Convert Path to string
+                        print(temp_file_path)
+                        # Create translator and translate the file
+                        translator = translator_factory.get_translator(file_extension)
+                        output_path = translator.translate(Path(temp_file_path), input_language, target_language, model)
+                        
+                    # Store the output path
+                    if output_path:
+                        output_paths.append(str(output_path))  # Convert Path to string
 
-                # Optionally, delete the temporary file
-                os.remove(temp_file_path)
+                    # Optionally, delete the temporary file
+                    os.remove(temp_file_path)
     
     # Redirect to the download route with the list of output files
     return redirect(url_for('download', files=','.join(output_paths)))  # Ensure all paths are strings
