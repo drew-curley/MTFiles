@@ -33,7 +33,6 @@ def index():
         }
         for item in wa_language_metadata
     ]
-    print(wa_language_metadata_list)
     
     return render_template('index.html', target_languages=target_languages_list, wa_language_metadata=wa_language_metadata_list, models=models_list)
 
@@ -49,34 +48,29 @@ def submit():
     for input_language in selected_input_languages:
         for target_language in selected_target_languages:
             for model in selected_models:
-                print(f"{target_language} {model}")
-
                 for file in uploaded_files:
-                    # TODO: clean this up. Be able to pass in file type to get_translator
-                    file_type = file.mimetype  # Get the file type (MIME type)
+                    file_type = file.mimetype
                     file_extension = mimetypeToFiletypeMap[file_type]
 
-                    # TODO: see if I can do this without making a temp file. Just use the file that is given
-                    # Save the uploaded file to a temporary location
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_extension}") as temp_file:
+                    original_filename = file.filename
+                    temp_dir = tempfile.gettempdir()
+                    temp_file_path = os.path.join(temp_dir, original_filename)
+
+                    with open(temp_file_path, 'wb') as temp_file:
                         temp_file.write(file.read())
                         file.seek(0)
-                        temp_file_path = temp_file.name
 
-                        print(temp_file_path)
-                        # Create translator and translate the file
-                        translator = translator_factory.get_translator(file_extension)
-                        output_path = translator.translate(Path(temp_file_path), input_language, target_language, model)
-                        
-                    # Store the output path
+                    translator = translator_factory.get_translator(file_extension)
+                    output_path = translator.translate(Path(temp_file_path), input_language, target_language, model)
+
                     if output_path:
-                        output_paths.append(str(output_path))  # Convert Path to string
+                        output_paths.append(str(output_path))
 
-                    # Optionally, delete the temporary file
                     os.remove(temp_file_path)
     
     # Redirect to the download route with the list of output files
     return redirect(url_for('download', files=','.join(output_paths)))  # Ensure all paths are strings
+
 
 @app.route('/download', methods=['GET'])
 def download():
