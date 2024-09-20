@@ -74,20 +74,21 @@ def submit():
 
 @app.route('/download', methods=['GET'])
 def download():
-    # Get file paths from query parameters
     file_paths = request.args.get('files', '').split(',')
 
-    # Create a Zip file in memory
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w') as zf:
         for file_path in file_paths:
             if os.path.exists(file_path):
                 zf.write(file_path, os.path.basename(file_path))
+
+                # Remove the file after adding it to the zip
+                os.remove(file_path)
             else:
                 return f"<h1>Error: File {file_path} not found!</h1>"
+    
     zip_buffer.seek(0)
 
-    # Send the zip file as a downloadable attachment
     return send_file(
         zip_buffer,
         mimetype='application/zip',
