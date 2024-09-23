@@ -94,10 +94,10 @@ class DocxTranslator(TranslatorInterface):
         document.save(output_path)
 
         # Frees loaded model and tokenizer
-        self._unload_model(model, tokenizer)
-
-        # Frees the pipeline
         del translation_pipeline
+        del model
+        del tokenizer
+        
         gc.collect()
         torch.cuda.empty_cache()
 

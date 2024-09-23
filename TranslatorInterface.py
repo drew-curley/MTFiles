@@ -49,10 +49,3 @@ class TranslatorInterface(ABC):
             model = AutoModelForSeq2SeqLM.from_pretrained(f"{model_dir}")
 
         return model, tokenizer
-
-
-    def _unload_model(self, model, tokenizer):
-        del model
-        del tokenizer
-        gc.collect()
-        torch.cuda.empty_cache()
