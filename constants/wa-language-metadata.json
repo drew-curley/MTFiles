@@ -153,7 +153,9 @@
             "language": {
                 "english_name": "Nepali",
                 "iso6393": "nep",
-                "supported_nllb_variants": []
+                "supported_nllb_variants": [
+                    "npi_Deva"
+                ]
             }
         },
         {
@@ -290,7 +292,9 @@
             "language": {
                 "english_name": "Swahili",
                 "iso6393": "swa",
-                "supported_nllb_variants": []
+                "supported_nllb_variants": [
+                    "swh_Latn"
+                ]
             }
         },
         {
